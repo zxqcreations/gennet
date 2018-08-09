@@ -30,8 +30,8 @@ Example:
 class gennet():
     def __init__(self, name, height, width, channel):
         self.name = name
-        self.x = tf.placeholder(tf.float32, shape=[None, height, width, channel], name='input')
-        self.y = tf.placeholder(tf.int64, shape=[None, 2], name='labels')
+        self._image = tf.placeholder(tf.float32, shape=[None, height, width, channel], name='input')
+        #self._gt_boxes = tf.placeholder(tf.int64, shape=[None, 1000], name='labels')
         self.net = None
         self.net_shape = None
         self.isflattened = False
@@ -68,7 +68,7 @@ class gennet():
             kernel = self.weight_var(kernel_shape, kernel_name)
             bias = self.bias_var(bias_shape, bias_name)
             if self.net == None:
-                self.net = tf.nn.relu(self.conv2d(self.x, kernel, padding=padding) + bias, name=scope)
+                self.net = tf.nn.relu(self.conv2d(self._image, kernel, padding=padding) + bias, name=scope)
             else:
                 self.net = tf.nn.relu(self.conv2d(self.net, kernel, padding=padding) + bias, name=scope)
             self.net_shape = self.net.get_shape()[1:]
@@ -106,7 +106,8 @@ class gennet():
         if self.net_shape == None or self.net == None:
             raise IOError('The input of softmax is None, maybe there is no conv layer?')
         self.net = tf.nn.softmax(self.net, name=name)
-        
+    
+    # Faltten conv layer
     def flatten(self, name='flatten'):
         if self.net_shape == None or self.net == None:
             raise IOError('The input of flatten is None, maybe there is no conv layer?')
